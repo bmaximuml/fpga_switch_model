@@ -117,3 +117,6 @@ dmypy.json
 
 # PyCharm files
 .idea
+
+# Rotated logs
+*.log.*
