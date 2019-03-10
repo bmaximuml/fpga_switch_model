@@ -29,14 +29,20 @@ import logging.config
 class TreeTopoGeneric(Topo):
     """"Generic Tree topology."""
 
-    def __init__(self, spread, depth, bandwidth, delay, loss):
+    def __init__(self, spread, depth, bandwidth, delay, loss, fpga, fpga_bandwidth, fpga_delay, fpga_loss):
         """"Create tree topology according to given parameters."""
+        logger = logging.getLogger(__name__)
 
         ### Initialize topology ###
         Topo.__init__(self)
 
-        # 10 Mbps bandwidth, 20 ms delay, 1% packet loss on each link
-        linkopts = dict(bw=bandwidth, delay=delay, loss=loss, use_htb=True)
+        # Setup parameters
+        fpga_bandwidth = bandwidth if fpga_bandwidth is None else fpga_bandwidth
+        fpga_delay = delay if fpga_delay is None else fpga_delay
+        fpga_loss = loss * 2 if fpga_loss is None else fpga_loss
+
+        link_opts = dict(bw=bandwidth, delay=delay, loss=loss, use_htb=True)
+        fpga_link_opts = dict(bw=fpga_bandwidth, delay=fpga_delay, loss=fpga_loss, use_htb=True)
 
         ### Add hosts and switches ###
 
@@ -66,7 +72,14 @@ class TreeTopoGeneric(Topo):
                         # add a link between the current switch, and all hosts
                         # directly beneath it.
                         # (spread * j) + k will get all the appropriate hosts
-                        self.addLink(switch, hosts[(spread * j) + k], **linkopts)
+                        if i == (fpga - 1):
+                            logger.info("Adding FPGA link from switch[{}][{}] to "
+                                        "host[{}]".format(i, j, (spread * j) + k))
+                            self.addLink(switch, hosts[(spread * j) + k], **fpga_link_opts)
+                        else:
+                            logger.info("Adding standard link from switch[{}][{}] to "
+                                        "host[{}]".format(i, j, (spread * j) + k))
+                            self.addLink(switch, hosts[(spread * j) + k], **link_opts)
 
                 else:
                     for k in range(spread):
@@ -75,7 +88,14 @@ class TreeTopoGeneric(Topo):
                         # i + 1 refers to 1 level deeper in the tree, and
                         # (spread * j) + k will get all the appropriate child
                         # switches on that level.
-                        self.addLink(switch, switches[i + 1][(spread * j) + k], **linkopts)
+                        if i == (fpga - 1):
+                            logger.debug("Adding FPGA link from switch[{}][{}] to "
+                                        "switch[{}][{}]".format(i, j, i + 1, (spread * j) + k))
+                            self.addLink(switch, switches[i + 1][(spread * j) + k], **fpga_link_opts)
+                        else:
+                            logger.debug("Adding standard link from switch[{}][{}] to "
+                                        "switch[{}][{}]".format(i, j, i + 1, (spread * j) + k))
+                            self.addLink(switch, switches[i + 1][(spread * j) + k], **link_opts)
 
 
 def setup_logging(
@@ -102,10 +122,13 @@ def validate_delay(ctx, param, value):
     valid_time = re.compile("^[0-9]+[PTGMkmunpf]?s$")
     # This will allow any valid time, such as '10ms', '23s', '1Gs', etc.
     # Naturally 1 Ps is both an absurd unit and not a very useful delay, but it should technically be valid.
-    if not valid_time.match(value):
+    if not valid_time.match(str(value)):
         raise click.BadParameter("delay must be in the format <time><unit>s. E.g. '10ms', '23s', '200ns'.")
 
+    return str(value)
 
+def validate_fpga_delay(ctx, param, value):
+    return None if value is None else validate_delay(ctx, param, value)
 @click.command()
 @click.option('-s', '--spread', default=3, show_default=True, help='Number of children each node will have')
 @click.option('-d', '--depth', default=4, show_default=True, help='Number of levels in the tree')
@@ -113,6 +136,13 @@ def validate_delay(ctx, param, value):
 @click.option('-e', '--delay', default='1ms', show_default=True, help='delay of all links',
               callback=validate_delay)
 @click.option('-l', '--loss', default=0, show_default=True, help='% chance of packet loss for all links')
+@click.option('-f', '--fpga', type=int, help='Level of the tree which should be modelled as FPGA switches (root is 0).')
+@click.option('--fpga-bandwidth', type=int, help='Max bandwidth of FPGA switch links in Mbps. ' +
+                                                 'Defaults to bandwidth of all links if unset.')
+@click.option('--fpga-delay', type=str, callback=validate_fpga_delay, help='Delay of FPGA switch links. ' +
+                                                                      'Defaults to delay of all links if unset.')
+@click.option('--fpga-loss', type=click.IntRange(0, 100), help='% chance of packet loss for FPGA switch links.' +
+                                                               'Defaults to 2 * loss of all links if unset.')
 
 @click.option('-p', '--ping_all', is_flag=True, help='Run a ping test between all hosts')
 @click.option('-i', '--iperf', is_flag=True, help='Test bandwidth between first and last host')
@@ -121,7 +151,21 @@ def validate_delay(ctx, param, value):
 
 @click.option('--log', default='info', show_default=True,
               type=click.Choice(['debug', 'info', 'output', 'warning', 'error', 'critical']), help='Set the log level')
-def performance_test(spread, depth, bandwidth, delay, loss, ping_all, iperf, quick, log):
+def performance_test(spread,
+                     depth,
+                     bandwidth,
+                     delay,
+                     loss,
+                     fpga,
+                     fpga_bandwidth,
+                     fpga_delay,
+                     fpga_loss,
+                     ping_all,
+                     iperf,
+                     quick,
+                     log
+                     ):
+
     if quick:
         spread = 3
         depth = 3
@@ -156,7 +200,7 @@ def performance_test(spread, depth, bandwidth, delay, loss, ping_all, iperf, qui
 
 
     "Create network and run simple performance test"
-    topo = TreeTopoGeneric(spread, depth, bandwidth, delay, loss)
+    topo = TreeTopoGeneric(spread, depth, bandwidth, delay, loss, fpga, fpga_bandwidth, fpga_delay, fpga_loss)
     net = Mininet(topo=topo, host=CPULimitedHost, link=TCLink, autoStaticArp=True)
     net.start()
     logger.info("Dumping host connections")
