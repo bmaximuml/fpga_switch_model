@@ -27,18 +27,18 @@ import logging.config
 # from sys import argv
 
 class TreeTopoGeneric(Topo):
-    "Simple topology example."
+    """"Generic Tree topology."""
 
     def __init__(self, spread, depth, bandwidth, delay, loss):
-        "Create tree topo."
+        """"Create tree topology according to given parameters."""
 
-        # Initialize topology
+        ### Initialize topology ###
         Topo.__init__(self)
 
         # 10 Mbps bandwidth, 20 ms delay, 1% packet loss on each link
         linkopts = dict(bw=bandwidth, delay=delay, loss=loss, use_htb=True)
 
-        # Add hosts and switches
+        ### Add hosts and switches ###
 
         # switch naming convention:
         #   s[level][switch_number]
@@ -55,6 +55,7 @@ class TreeTopoGeneric(Topo):
                     sw_name = 's' + str(i) + str(j)
                     switches[i][j] = self.addSwitch(sw_name)
 
+        ### Add links ###
 
         for i, row in enumerate(switches):
             for j, switch in enumerate(row):
