@@ -131,8 +131,6 @@ def validate_fpga_delay(ctx, param, value):
     return None if value is None else validate_delay(ctx, param, value)
 
 
-def validate_fpga_delay(ctx, param, value):
-    return None if value is None else validate_delay(ctx, param, value)
 @click.command()
 @click.option('-s', '--spread', default=3, show_default=True, help='Number of children each node will have')
 @click.option('-d', '--depth', default=4, show_default=True, help='Number of levels in the tree')
