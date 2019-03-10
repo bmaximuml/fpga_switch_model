@@ -24,7 +24,9 @@ import click
 import logging
 import logging.config
 
+
 # from sys import argv
+
 
 class TreeTopoGeneric(Topo):
     """"Generic Tree topology."""
@@ -33,7 +35,7 @@ class TreeTopoGeneric(Topo):
         """"Create tree topology according to given parameters."""
         logger = logging.getLogger(__name__)
 
-        ### Initialize topology ###
+        # Initialize topology #
         Topo.__init__(self)
 
         # Setup parameters
@@ -44,14 +46,13 @@ class TreeTopoGeneric(Topo):
         link_opts = dict(bw=bandwidth, delay=delay, loss=loss, use_htb=True)
         fpga_link_opts = dict(bw=fpga_bandwidth, delay=fpga_delay, loss=fpga_loss, use_htb=True)
 
-        ### Add hosts and switches ###
+        # Add hosts and switches #
 
         # switch naming convention:
         #   s[level][switch_number]
 
-
-        switches = [[None for x in range(spread ** depth)] for y in range(depth - 1)]
-        hosts = [None for x in range(spread ** depth)]
+        switches = [[None for _ in range(spread ** (depth - 1))] for _ in range(depth - 1)]
+        hosts = [None for _ in range(spread ** (depth - 1))]
 
         for i in range(depth):
             for j in range(spread ** i):
@@ -61,7 +62,7 @@ class TreeTopoGeneric(Topo):
                     sw_name = 's' + str(i) + str(j)
                     switches[i][j] = self.addSwitch(sw_name)
 
-        ### Add links ###
+        # Add links #
 
         for i, row in enumerate(switches):
             for j, switch in enumerate(row):
@@ -90,22 +91,20 @@ class TreeTopoGeneric(Topo):
                         # switches on that level.
                         if i == (fpga - 1):
                             logger.debug("Adding FPGA link from switch[{}][{}] to "
-                                        "switch[{}][{}]".format(i, j, i + 1, (spread * j) + k))
+                                         "switch[{}][{}]".format(i, j, i + 1, (spread * j) + k))
                             self.addLink(switch, switches[i + 1][(spread * j) + k], **fpga_link_opts)
                         else:
                             logger.debug("Adding standard link from switch[{}][{}] to "
-                                        "switch[{}][{}]".format(i, j, i + 1, (spread * j) + k))
+                                         "switch[{}][{}]".format(i, j, i + 1, (spread * j) + k))
                             self.addLink(switch, switches[i + 1][(spread * j) + k], **link_opts)
 
 
 def setup_logging(
-    default_path='logging.json',
-    default_level=logging.INFO,
-    env_key='LOG_CFG'
+        default_path='logging.json',
+        default_level=logging.INFO,
+        env_key='LOG_CFG'
 ):
-    """Setup logging configuration
-
-    """
+    """Setup logging configuration"""
     path = default_path
     value = os.getenv(env_key, None)
     if value:
@@ -127,6 +126,11 @@ def validate_delay(ctx, param, value):
 
     return str(value)
 
+
+def validate_fpga_delay(ctx, param, value):
+    return None if value is None else validate_delay(ctx, param, value)
+
+
 def validate_fpga_delay(ctx, param, value):
     return None if value is None else validate_delay(ctx, param, value)
 @click.command()
@@ -143,12 +147,10 @@ def validate_fpga_delay(ctx, param, value):
                                                                       'Defaults to delay of all links if unset.')
 @click.option('--fpga-loss', type=click.IntRange(0, 100), help='% chance of packet loss for FPGA switch links.' +
                                                                'Defaults to 2 * loss of all links if unset.')
-
+@click.option('-p', '--ping_all', is_flag=True, help='Run a ping test between all hosts.')
 @click.option('-p', '--ping_all', is_flag=True, help='Run a ping test between all hosts')
 @click.option('-i', '--iperf', is_flag=True, help='Test bandwidth between first and last host')
-
 @click.option('-q', '--quick', is_flag=True, help='For testing purposes')
-
 @click.option('--log', default='info', show_default=True,
               type=click.Choice(['debug', 'info', 'output', 'warning', 'error', 'critical']), help='Set the log level')
 def performance_test(spread,
@@ -165,7 +167,6 @@ def performance_test(spread,
                      quick,
                      log
                      ):
-
     if quick:
         spread = 3
         depth = 3
@@ -175,7 +176,6 @@ def performance_test(spread,
         ping_all = True
         iperf = True
         log = 'info'
-
 
     Cleanup.cleanup()
     setLogLevel(log)
@@ -197,8 +197,6 @@ def performance_test(spread,
         logger.setLevel(logging.INFO)
         setup_logging(default_level=logging.INFO)
 
-
-
     "Create network and run simple performance test"
     topo = TreeTopoGeneric(spread, depth, bandwidth, delay, loss, fpga, fpga_bandwidth, fpga_delay, fpga_loss)
     net = Mininet(topo=topo, host=CPULimitedHost, link=TCLink, autoStaticArp=True)
@@ -213,8 +211,9 @@ def performance_test(spread,
     if iperf:
         logger.info("Testing bandwidth between first and last hosts")
         net.iperf()
-        
+
     net.stop()
+
 
 if __name__ == '__main__':
     performance_test()
