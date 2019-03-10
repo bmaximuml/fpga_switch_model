@@ -132,25 +132,29 @@ def validate_fpga_delay(ctx, param, value):
 
 
 @click.command()
-@click.option('-s', '--spread', default=3, show_default=True, help='Number of children each node will have')
-@click.option('-d', '--depth', default=4, show_default=True, help='Number of levels in the tree')
-@click.option('-b', '--bandwidth', default=10, show_default=True, help='Max bandwidth of all links in Mbps')
-@click.option('-e', '--delay', default='1ms', show_default=True, help='delay of all links',
-              callback=validate_delay)
-@click.option('-l', '--loss', default=0, show_default=True, help='% chance of packet loss for all links')
-@click.option('-f', '--fpga', type=int, help='Level of the tree which should be modelled as FPGA switches (root is 0).')
-@click.option('--fpga-bandwidth', type=int, help='Max bandwidth of FPGA switch links in Mbps. ' +
-                                                 'Defaults to bandwidth of all links if unset.')
+@click.option('-s', '--spread', type=click.IntRange(min=1), default=2, show_default=True,
+              help='Number of children each node will have.')
+@click.option('-d', '--depth', type=click.IntRange(min=1), default=4, show_default=True,
+              help='Number of levels in the tree.')
+@click.option('-b', '--bandwidth', type=click.IntRange(min=0), default=10, show_default=True,
+              help='Max bandwidth of all links in Mbps.')
+@click.option('-e', '--delay', type=str, default='1ms', show_default=True, callback=validate_delay,
+              help='Delay of all links.')
+@click.option('-l', '--loss', default=0, show_default=True, type=click.IntRange(0, 100),
+              help='% chance of packet loss for all links.')
+@click.option('-f', '--fpga', type=click.IntRange(min=0),
+              help='Level of the tree which should be modelled as FPGA switches (root is 0).')
+@click.option('--fpga-bandwidth', type=click.IntRange(min=0), help='Max bandwidth of FPGA switch links in Mbps. ' +
+                                                                   'Defaults to bandwidth of all links if unset.')
 @click.option('--fpga-delay', type=str, callback=validate_fpga_delay, help='Delay of FPGA switch links. ' +
-                                                                      'Defaults to delay of all links if unset.')
+                                                                           'Defaults to delay of all links if unset.')
 @click.option('--fpga-loss', type=click.IntRange(0, 100), help='% chance of packet loss for FPGA switch links.' +
                                                                'Defaults to 2 * loss of all links if unset.')
 @click.option('-p', '--ping_all', is_flag=True, help='Run a ping test between all hosts.')
-@click.option('-p', '--ping_all', is_flag=True, help='Run a ping test between all hosts')
-@click.option('-i', '--iperf', is_flag=True, help='Test bandwidth between first and last host')
-@click.option('-q', '--quick', is_flag=True, help='For testing purposes')
+@click.option('-i', '--iperf', is_flag=True, help='Test bandwidth between first and last host.')
+@click.option('-q', '--quick', is_flag=True, help='For testing purposes.')
 @click.option('--log', default='info', show_default=True,
-              type=click.Choice(['debug', 'info', 'output', 'warning', 'error', 'critical']), help='Set the log level')
+              type=click.Choice(['debug', 'info', 'output', 'warning', 'error', 'critical']), help='Set the log level.')
 def performance_test(spread,
                      depth,
                      bandwidth,
