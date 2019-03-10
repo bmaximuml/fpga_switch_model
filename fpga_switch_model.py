@@ -67,7 +67,7 @@ class TreeTopoGeneric(Topo):
         for i, row in enumerate(switches):
             for j, switch in enumerate(row):
                 if switch is None:
-                    break;
+                    break
                 if i == (depth - 2):
                     for k in range(spread):
                         # add a link between the current switch, and all hosts
