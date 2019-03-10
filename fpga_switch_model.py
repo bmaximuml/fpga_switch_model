@@ -73,7 +73,7 @@ class TreeTopoGeneric(Topo):
                         # add a link between the current switch, and all hosts
                         # directly beneath it.
                         # (spread * j) + k will get all the appropriate hosts
-                        if i == (fpga - 1):
+                        if fpga is not None and i == (fpga - 1):
                             logger.info("Adding FPGA link from switch[{}][{}] to "
                                         "host[{}]".format(i, j, (spread * j) + k))
                             self.addLink(switch, hosts[(spread * j) + k], **fpga_link_opts)
@@ -89,7 +89,7 @@ class TreeTopoGeneric(Topo):
                         # i + 1 refers to 1 level deeper in the tree, and
                         # (spread * j) + k will get all the appropriate child
                         # switches on that level.
-                        if i == (fpga - 1):
+                        if fpga is not None and i == (fpga - 1):
                             logger.debug("Adding FPGA link from switch[{}][{}] to "
                                          "switch[{}][{}]".format(i, j, i + 1, (spread * j) + k))
                             self.addLink(switch, switches[i + 1][(spread * j) + k], **fpga_link_opts)
