@@ -74,12 +74,12 @@ class TreeTopoGeneric(Topo):
                         # directly beneath it.
                         # (spread * j) + k will get all the appropriate hosts
                         if fpga is not None and i == (fpga - 1):
-                            logger.info("Adding FPGA link from switch[{}][{}] to "
-                                        "host[{}]".format(i, j, (spread * j) + k))
+                            logger.debug("Adding FPGA link from switch[{}][{}] to "
+                                         "host[{}]".format(i, j, (spread * j) + k))
                             self.addLink(switch, hosts[(spread * j) + k], **fpga_link_opts)
                         else:
-                            logger.info("Adding standard link from switch[{}][{}] to "
-                                        "host[{}]".format(i, j, (spread * j) + k))
+                            logger.debug("Adding standard link from switch[{}][{}] to "
+                                         "host[{}]".format(i, j, (spread * j) + k))
                             self.addLink(switch, hosts[(spread * j) + k], **link_opts)
 
                 else:
