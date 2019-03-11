@@ -19,8 +19,11 @@ import numpy as np
 import click
 
 from performance_tests import test_cloud_fpga
-from install_mininet import  install_mininet
-from mininet_functions import setup_mininet
+try:
+    from mininet_functions import setup_mininet
+except ImportError:
+    os.symlink("mn/mininet", "mininet")
+    from mininet_functions import setup_mininet
 from mininet.util import dumpNodeConnections
 
 
