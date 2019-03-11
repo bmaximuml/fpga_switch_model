@@ -126,6 +126,32 @@ def halve_delay(delay):
     return "{}{}".format(half, match.group(2))
 
 
+def test_cloud_fpga(net, fpga):
+    """Test how long it takes a packet to travel between the leaf and the root (or FPGA switch).
+
+    If the fpga flag is set, this will test how long it takes a packet to travel between the leaf
+    and the first FPGA switch.
+    If it is unset, this will test how long it takes a packet to travel between the leaf and the
+    root.
+
+    The tests are conducted using the ping protocol, which uses ICMP packets."""
+    logger = logging.getLogger(__name__)
+    h0 = net.get('h0')
+    if fpga:
+        logger.info('Testing performance between leaf (h0) and FPGA switch (f0)')
+        f0 = net.get('f0')
+        ping = h0.cmd('ping -c 10 {}'.format(f0.IP()))
+    else:
+        logger.info('Testing performance between leaf (h0) and cloud (cloud)')
+        cloud = net.get('cloud')
+        ping = h0.cmd('ping -c 10 {}'.format(cloud.IP()))
+
+    rtt_results = re.compile('rtt.*')
+    search = rtt_results.search(ping)
+    rtt = search.group(0)
+    logger.info('Ping results: %s', rtt)
+
+
 def setup_logging(
         default_path='logging.json',
         default_level=logging.INFO,
@@ -179,6 +205,8 @@ def validate_fpga_delay(ctx, param, value):
                                                                'Defaults to 2 * loss of all links if unset.')
 @click.option('-p', '--ping-all', is_flag=True, help='Run a ping test between all hosts.')
 @click.option('-i', '--iperf', is_flag=True, help='Test bandwidth between first and last host.')
+@click.option('-c', '--cloud-fpga', type=bool, default=True, show_default=True,
+              help='Test performance between leaf and root or leaf and FPGA switch')
 @click.option('--dump-node-connections', is_flag=True, help='Dump all node connections.')
 @click.option('--poisson', is_flag=True, help="Use a poisson distribution for link delay.")
 @click.option('-q', '--quick', is_flag=True, help='For testing purposes.')
@@ -198,7 +226,8 @@ def performance_test(spread,
                      dump_node_connections,
                      poisson,
                      quick,
-                     log
+                     log,
+                     cloud_fpga
                      ):
     if quick:
         spread = 3
@@ -244,6 +273,9 @@ def performance_test(spread,
     for node in net.keys():
         if node[0] == 'h':
             number_of_hosts += 1
+
+    if cloud_fpga:
+        test_cloud_fpga(net, fpga)
 
     if ping_all:
         if number_of_hosts > 1:
