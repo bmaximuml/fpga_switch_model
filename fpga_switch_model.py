@@ -118,9 +118,9 @@ def setup_logging(
 
 
 def validate_delay(ctx, param, value):
-    valid_time = re.compile("^[0-9]+[PTGMkmunpf]?s$")
+    valid_time = re.compile('^[0-9]+[PTGMkmunpf]?s$')
     # This will allow any valid time, such as '10ms', '23s', '1Gs', etc.
-    # Naturally 1 Ps is both an absurd unit and not a very useful delay, but it should technically be valid.
+    # Naturally 1Ps is both an absurd unit and not a very useful delay, but it is technically valid.
     if not valid_time.match(str(value)):
         raise click.BadParameter("delay must be in the format <time><unit>s. E.g. '10ms', '23s', '200ns'.")
 
