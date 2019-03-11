@@ -14,6 +14,7 @@ import logging
 import logging.config
 import os
 import re
+import numpy as np
 
 import click
 from mininet.clean import Cleanup
@@ -31,7 +32,8 @@ from mininet.util import dumpNodeConnections
 class TreeTopoGeneric(Topo):
     """"Generic Tree topology."""
 
-    def __init__(self, spread, depth, bandwidth, delay, loss, fpga, fpga_bandwidth, fpga_delay, fpga_loss):
+    def __init__(self, spread, depth, bandwidth, delay, loss, fpga, fpga_bandwidth, fpga_delay,
+                 fpga_loss, poisson):
         """"Create tree topology according to given parameters."""
         logger = logging.getLogger(__name__)
 
@@ -43,8 +45,13 @@ class TreeTopoGeneric(Topo):
         fpga_delay = delay if fpga_delay is None else halve_delay(fpga_delay)
         fpga_loss = loss * 2 if fpga_loss is None else fpga_loss
 
-        link_opts = dict(bw=bandwidth, delay=delay, loss=loss, use_htb=True)
-        fpga_link_opts = dict(bw=fpga_bandwidth, delay=fpga_delay, loss=fpga_loss, use_htb=True)
+        if poisson:
+            link_opts = dict(bw=bandwidth, delay=get_poisson_delay(delay), loss=loss, use_htb=True)
+            fpga_link_opts = dict(bw=fpga_bandwidth, delay=get_poisson_delay(fpga_delay),
+                                  loss=fpga_loss, use_htb=True)
+        else:
+            link_opts = dict(bw=bandwidth, delay=delay, loss=loss, use_htb=True)
+            fpga_link_opts = dict(bw=fpga_bandwidth, delay=fpga_delay, loss=fpga_loss, use_htb=True)
         cloud_link_opts = dict(bw=1000, delay='0ms', loss=0, use_htb=True)
 
         # Add hosts and switches #
@@ -102,6 +109,14 @@ class TreeTopoGeneric(Topo):
                         logger.debug("Adding standard link from switch[{}][{}] to "
                                      "switch[{}][{}]".format(i, j, i + 1, (spread * j) + k))
                         self.addLink(switch, switches[i + 1][(spread * j) + k], **link_opts)
+
+
+def get_poisson_delay(delay):
+    """Returns a Poisson distributed delay of the given delay."""
+    valid_time = re.compile('^([-+]?[0-9]*\.?[0-9]+)([PTGMkmunpf]?s)$')
+    match = valid_time.match(delay)
+    poisson = np.random.poisson(float(match.group(1)))
+    return "{}{}".format(poisson, match.group(2))
 
 
 def halve_delay(delay):
@@ -165,6 +180,7 @@ def validate_fpga_delay(ctx, param, value):
 @click.option('-p', '--ping-all', is_flag=True, help='Run a ping test between all hosts.')
 @click.option('-i', '--iperf', is_flag=True, help='Test bandwidth between first and last host.')
 @click.option('--dump-node-connections', is_flag=True, help='Dump all node connections.')
+@click.option('--poisson', is_flag=True, help="Use a poisson distribution for link delay.")
 @click.option('-q', '--quick', is_flag=True, help='For testing purposes.')
 @click.option('--log', default='info', show_default=True,
               type=click.Choice(['debug', 'info', 'output', 'warning', 'error', 'critical']), help='Set the log level.')
@@ -180,6 +196,7 @@ def performance_test(spread,
                      ping_all,
                      iperf,
                      dump_node_connections,
+                     poisson,
                      quick,
                      log
                      ):
@@ -213,8 +230,9 @@ def performance_test(spread,
         logger.setLevel(logging.INFO)
         setup_logging(default_level=logging.INFO)
 
-    "Create network and run simple performance test"
-    topo = TreeTopoGeneric(spread, depth, bandwidth, delay, loss, fpga, fpga_bandwidth, fpga_delay, fpga_loss)
+    # Create network
+    topo = TreeTopoGeneric(spread, depth, bandwidth, delay, loss, fpga,
+                           fpga_bandwidth, fpga_delay, fpga_loss, poisson)
     net = Mininet(topo=topo, host=CPULimitedHost, link=TCLink, autoStaticArp=True)
     net.start()
 
