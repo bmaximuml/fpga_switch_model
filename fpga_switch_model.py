@@ -206,13 +206,24 @@ def performance_test(spread,
     logger.info("Dumping host connections")
     dumpNodeConnections(net.hosts)
 
+    number_of_hosts = 0
+    for node in net.keys():
+        if node[0] == 'h':
+            number_of_hosts += 1
+
     if ping_all:
-        logger.info("Running ping test between all hosts")
-        net.pingAll()
+        if number_of_hosts > 1:
+            logger.info("Running ping test between all hosts")
+            net.pingAll()
+        else:
+            logger.warning(str(number_of_hosts) + " host(s). Unable to run ping test.")
 
     if iperf:
-        logger.info("Testing bandwidth between first and last hosts")
-        net.iperf()
+        if number_of_hosts > 1:
+            logger.info("Testing bandwidth between first and last hosts")
+            net.iperf()
+        else:
+            logger.warning(str(number_of_hosts) + " host(s). Unable to run bandwidth test.")
 
     net.stop()
 
