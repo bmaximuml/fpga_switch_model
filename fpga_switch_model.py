@@ -40,11 +40,12 @@ class TreeTopoGeneric(Topo):
 
         # Setup parameters
         fpga_bandwidth = bandwidth if fpga_bandwidth is None else fpga_bandwidth
-        fpga_delay = delay if fpga_delay is None else fpga_delay
+        fpga_delay = delay if fpga_delay is None else halve_delay(fpga_delay)
         fpga_loss = loss * 2 if fpga_loss is None else fpga_loss
 
         link_opts = dict(bw=bandwidth, delay=delay, loss=loss, use_htb=True)
         fpga_link_opts = dict(bw=fpga_bandwidth, delay=fpga_delay, loss=fpga_loss, use_htb=True)
+        cloud_link_opts = dict(bw=1000, delay='0ms', loss=0, use_htb=True)
 
         # Add hosts and switches #
 
@@ -61,6 +62,20 @@ class TreeTopoGeneric(Topo):
                 else:
                     sw_name = 's' + str(i) + str(j)
                     switches[i][j] = self.addSwitch(sw_name)
+                    if fpga is not None and fpga == i:
+                        # Create host to serve as FPGA in switch
+                        # Will have one link to the relevant FPGA
+                        # The link will have the bandwidth and loss specified by the user, and half the delay
+                        # These parameters are as if they were caused by the FPGA, rather than a link
+                        # As a result, latency is halved since it will essentially be doubled by the packet flowing in
+                        # and out of the host
+                        self.addHost('f{}'.format(j))
+                        self.addLink(sw_name, 'f{}'.format(j), **fpga_link_opts)
+
+        # Add host to serve as cloud
+        # Will have one high bandwidth, 0 latency link to root switch
+        self.addHost('cloud')
+        self.addLink(switches[0][0], 'cloud', **cloud_link_opts)
 
         # Add links #
 
@@ -73,14 +88,9 @@ class TreeTopoGeneric(Topo):
                         # add a link between the current switch, and all hosts
                         # directly beneath it.
                         # (spread * j) + k will get all the appropriate hosts
-                        if fpga is not None and i == (fpga - 1):
-                            logger.debug("Adding FPGA link from switch[{}][{}] to "
-                                         "host[{}]".format(i, j, (spread * j) + k))
-                            self.addLink(switch, hosts[(spread * j) + k], **fpga_link_opts)
-                        else:
-                            logger.debug("Adding standard link from switch[{}][{}] to "
-                                         "host[{}]".format(i, j, (spread * j) + k))
-                            self.addLink(switch, hosts[(spread * j) + k], **link_opts)
+                        logger.debug("Adding standard link from switch[{}][{}] to "
+                                     "host[{}]".format(i, j, (spread * j) + k))
+                        self.addLink(switch, hosts[(spread * j) + k], **link_opts)
 
                 else:
                     for k in range(spread):
@@ -89,14 +99,9 @@ class TreeTopoGeneric(Topo):
                         # i + 1 refers to 1 level deeper in the tree, and
                         # (spread * j) + k will get all the appropriate child
                         # switches on that level.
-                        if fpga is not None and i == (fpga - 1):
-                            logger.debug("Adding FPGA link from switch[{}][{}] to "
-                                         "switch[{}][{}]".format(i, j, i + 1, (spread * j) + k))
-                            self.addLink(switch, switches[i + 1][(spread * j) + k], **fpga_link_opts)
-                        else:
-                            logger.debug("Adding standard link from switch[{}][{}] to "
-                                         "switch[{}][{}]".format(i, j, i + 1, (spread * j) + k))
-                            self.addLink(switch, switches[i + 1][(spread * j) + k], **link_opts)
+                        logger.debug("Adding standard link from switch[{}][{}] to "
+                                     "switch[{}][{}]".format(i, j, i + 1, (spread * j) + k))
+                        self.addLink(switch, switches[i + 1][(spread * j) + k], **link_opts)
 
 
 def halve_delay(delay):
