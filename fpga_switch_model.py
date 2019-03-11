@@ -99,6 +99,13 @@ class TreeTopoGeneric(Topo):
                             self.addLink(switch, switches[i + 1][(spread * j) + k], **link_opts)
 
 
+def halve_delay(delay):
+    valid_time = re.compile('^([-+]?[0-9]*\.?[0-9]+)([PTGMkmunpf]?s)$')
+    match = valid_time.match(delay)
+    half = float(match.group(1)) / 2
+    return "{}{}".format(half, match.group(2))
+
+
 def setup_logging(
         default_path='logging.json',
         default_level=logging.INFO,
