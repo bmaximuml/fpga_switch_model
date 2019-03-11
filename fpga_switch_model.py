@@ -17,98 +17,11 @@ import re
 import numpy as np
 
 import click
-from mininet.clean import Cleanup
-from mininet.net import Mininet
-from mininet.link import TCLink
-from mininet.log import setLogLevel
-from mininet.node import CPULimitedHost
-from mininet.topo import Topo
+
+from performance_tests import test_cloud_fpga
+from install_mininet import  install_mininet
+from mininet_functions import setup_mininet
 from mininet.util import dumpNodeConnections
-
-
-# from sys import argv
-
-
-class TreeTopoGeneric(Topo):
-    """"Generic Tree topology."""
-
-    def __init__(self, spread, depth, bandwidth, delay, loss, fpga, fpga_bandwidth, fpga_delay,
-                 fpga_loss, poisson):
-        """"Create tree topology according to given parameters."""
-        logger = logging.getLogger(__name__)
-
-        # Initialize topology #
-        Topo.__init__(self)
-
-        # Setup parameters
-        fpga_bandwidth = bandwidth if fpga_bandwidth is None else fpga_bandwidth
-        fpga_delay = delay if fpga_delay is None else halve_delay(fpga_delay)
-        fpga_loss = loss * 2 if fpga_loss is None else fpga_loss
-
-        if poisson:
-            link_opts = dict(bw=bandwidth, delay=get_poisson_delay(delay), loss=loss, use_htb=True)
-            fpga_link_opts = dict(bw=fpga_bandwidth, delay=get_poisson_delay(fpga_delay),
-                                  loss=fpga_loss, use_htb=True)
-        else:
-            link_opts = dict(bw=bandwidth, delay=delay, loss=loss, use_htb=True)
-            fpga_link_opts = dict(bw=fpga_bandwidth, delay=fpga_delay, loss=fpga_loss, use_htb=True)
-        cloud_link_opts = dict(bw=1000, delay='0ms', loss=0, use_htb=True)
-
-        # Add hosts and switches #
-
-        # switch naming convention:
-        #   s[level][switch_number]
-
-        switches = [[None for _ in range(spread ** (depth - 1))] for _ in range(depth - 1)]
-        hosts = [None for _ in range(spread ** (depth - 1))]
-
-        for i in range(depth):
-            for j in range(spread ** i):
-                if i == (depth - 1):
-                    hosts[j] = self.addHost('h' + str(j))
-                else:
-                    sw_name = 's' + str(i) + str(j)
-                    switches[i][j] = self.addSwitch(sw_name)
-                    if fpga is not None and fpga == i:
-                        # Create host to serve as FPGA in switch
-                        # Will have one link to the relevant FPGA
-                        # The link will have the bandwidth and loss specified by the user, and half the delay
-                        # These parameters are as if they were caused by the FPGA, rather than a link
-                        # As a result, latency is halved since it will essentially be doubled by the packet flowing in
-                        # and out of the host
-                        self.addHost('f{}'.format(j))
-                        self.addLink(sw_name, 'f{}'.format(j), **fpga_link_opts)
-
-        # Add host to serve as cloud
-        # Will have one high bandwidth, 0 latency link to root switch
-        self.addHost('cloud')
-        self.addLink(switches[0][0], 'cloud', **cloud_link_opts)
-
-        # Add links #
-
-        for i, row in enumerate(switches):
-            for j, switch in enumerate(row):
-                if switch is None:
-                    break
-                if i == (depth - 2):
-                    for k in range(spread):
-                        # add a link between the current switch, and all hosts
-                        # directly beneath it.
-                        # (spread * j) + k will get all the appropriate hosts
-                        logger.debug("Adding standard link from switch[{}][{}] to "
-                                     "host[{}]".format(i, j, (spread * j) + k))
-                        self.addLink(switch, hosts[(spread * j) + k], **link_opts)
-
-                else:
-                    for k in range(spread):
-                        # add a link between the current switch, and all
-                        # switches directly beneath it.
-                        # i + 1 refers to 1 level deeper in the tree, and
-                        # (spread * j) + k will get all the appropriate child
-                        # switches on that level.
-                        logger.debug("Adding standard link from switch[{}][{}] to "
-                                     "switch[{}][{}]".format(i, j, i + 1, (spread * j) + k))
-                        self.addLink(switch, switches[i + 1][(spread * j) + k], **link_opts)
 
 
 def get_poisson_delay(delay):
@@ -124,32 +37,6 @@ def halve_delay(delay):
     match = valid_time.match(delay)
     half = float(match.group(1)) / 2
     return "{}{}".format(half, match.group(2))
-
-
-def test_cloud_fpga(net, fpga):
-    """Test how long it takes a packet to travel between the leaf and the root (or FPGA switch).
-
-    If the fpga flag is set, this will test how long it takes a packet to travel between the leaf
-    and the first FPGA switch.
-    If it is unset, this will test how long it takes a packet to travel between the leaf and the
-    root.
-
-    The tests are conducted using the ping protocol, which uses ICMP packets."""
-    logger = logging.getLogger(__name__)
-    h0 = net.get('h0')
-    if fpga:
-        logger.info('Testing performance between leaf (h0) and FPGA switch (f0)')
-        f0 = net.get('f0')
-        ping = h0.cmd('ping -c 10 {}'.format(f0.IP()))
-    else:
-        logger.info('Testing performance between leaf (h0) and cloud (cloud)')
-        cloud = net.get('cloud')
-        ping = h0.cmd('ping -c 10 {}'.format(cloud.IP()))
-
-    rtt_results = re.compile('rtt.*')
-    search = rtt_results.search(ping)
-    rtt = search.group(0)
-    logger.info('Ping results: %s', rtt)
 
 
 def setup_logging(
@@ -239,8 +126,8 @@ def main(spread,
         iperf = True
         log = 'info'
 
-    Cleanup.cleanup()
-    setLogLevel(log)
+    net = setup_mininet(log, spread, depth, bandwidth, delay, loss, fpga, fpga_bandwidth,
+                        fpga_delay, fpga_loss, poisson)
     logger = logging.getLogger(__name__)
 
     if log == 'debug':
@@ -258,12 +145,6 @@ def main(spread,
     else:
         logger.setLevel(logging.INFO)
         setup_logging(default_level=logging.INFO)
-
-    # Create network
-    topo = TreeTopoGeneric(spread, depth, bandwidth, delay, loss, fpga,
-                           fpga_bandwidth, fpga_delay, fpga_loss, poisson)
-    net = Mininet(topo=topo, host=CPULimitedHost, link=TCLink, autoStaticArp=True)
-    net.start()
 
     if dump_node_connections:
         logger.info("Dumping host connections")
