@@ -164,6 +164,7 @@ def validate_fpga_delay(ctx, param, value):
                                                                'Defaults to 2 * loss of all links if unset.')
 @click.option('-p', '--ping-all', is_flag=True, help='Run a ping test between all hosts.')
 @click.option('-i', '--iperf', is_flag=True, help='Test bandwidth between first and last host.')
+@click.option('--dump-node-connections', is_flag=True, help='Dump all node connections.')
 @click.option('-q', '--quick', is_flag=True, help='For testing purposes.')
 @click.option('--log', default='info', show_default=True,
               type=click.Choice(['debug', 'info', 'output', 'warning', 'error', 'critical']), help='Set the log level.')
@@ -178,6 +179,7 @@ def performance_test(spread,
                      fpga_loss,
                      ping_all,
                      iperf,
+                     dump_node_connections,
                      quick,
                      log
                      ):
@@ -215,8 +217,10 @@ def performance_test(spread,
     topo = TreeTopoGeneric(spread, depth, bandwidth, delay, loss, fpga, fpga_bandwidth, fpga_delay, fpga_loss)
     net = Mininet(topo=topo, host=CPULimitedHost, link=TCLink, autoStaticArp=True)
     net.start()
-    logger.info("Dumping host connections")
-    dumpNodeConnections(net.hosts)
+
+    if dump_node_connections:
+        logger.info("Dumping host connections")
+        dumpNodeConnections(net.hosts)
 
     number_of_hosts = 0
     for node in net.keys():
