@@ -157,7 +157,7 @@ def validate_fpga_delay(ctx, param, value):
                                                                            'Defaults to delay of all links if unset.')
 @click.option('--fpga-loss', type=click.IntRange(0, 100), help='% chance of packet loss for FPGA switch links.' +
                                                                'Defaults to 2 * loss of all links if unset.')
-@click.option('-p', '--ping_all', is_flag=True, help='Run a ping test between all hosts.')
+@click.option('-p', '--ping-all', is_flag=True, help='Run a ping test between all hosts.')
 @click.option('-i', '--iperf', is_flag=True, help='Test bandwidth between first and last host.')
 @click.option('-q', '--quick', is_flag=True, help='For testing purposes.')
 @click.option('--log', default='info', show_default=True,
