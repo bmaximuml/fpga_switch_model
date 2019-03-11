@@ -212,23 +212,23 @@ def validate_fpga_delay(ctx, param, value):
 @click.option('-q', '--quick', is_flag=True, help='For testing purposes.')
 @click.option('--log', default='info', show_default=True,
               type=click.Choice(['debug', 'info', 'output', 'warning', 'error', 'critical']), help='Set the log level.')
-def performance_test(spread,
-                     depth,
-                     bandwidth,
-                     delay,
-                     loss,
-                     fpga,
-                     fpga_bandwidth,
-                     fpga_delay,
-                     fpga_loss,
-                     ping_all,
-                     iperf,
-                     dump_node_connections,
-                     poisson,
-                     quick,
-                     log,
-                     cloud_fpga
-                     ):
+def main(spread,
+         depth,
+         bandwidth,
+         delay,
+         loss,
+         fpga,
+         fpga_bandwidth,
+         fpga_delay,
+         fpga_loss,
+         ping_all,
+         iperf,
+         dump_node_connections,
+         poisson,
+         quick,
+         log,
+         cloud_fpga
+         ):
     if quick:
         spread = 3
         depth = 3
@@ -295,4 +295,4 @@ def performance_test(spread,
 
 
 if __name__ == '__main__':
-    performance_test()
+    main()
