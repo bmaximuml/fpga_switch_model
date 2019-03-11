@@ -1,3 +1,7 @@
+import logging
+import re
+
+
 def test_cloud_fpga(net, fpga):
     """Test how long it takes a packet to travel between the leaf and the root (or FPGA switch).
 

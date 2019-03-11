@@ -1,3 +1,5 @@
+import logging
+
 from mininet.clean import Cleanup
 from mininet.net import Mininet
 from mininet.link import TCLink
