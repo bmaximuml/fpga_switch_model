@@ -68,23 +68,27 @@ def validate_fpga_delay(ctx, param, value):
 @click.option('-e', '--delay', type=str, default='1ms', show_default=True, callback=validate_delay,
               help='Delay of all links.')
 @click.option('-l', '--loss', default=0, show_default=True, type=click.IntRange(0, 100),
-              help='% chance of packet loss for all links.')
+              help='Percentage chance of packet loss for all links.')
 @click.option('-f', '--fpga', type=click.IntRange(min=0),
               help='Level of the tree which should be modelled as FPGA switches (root is 0).')
-@click.option('--fpga-bandwidth', type=click.IntRange(min=0), help='Max bandwidth of FPGA switch links in Mbps. ' +
-                                                                   'Defaults to bandwidth of all links if unset.')
-@click.option('--fpga-delay', type=str, callback=validate_fpga_delay, help='Delay of FPGA switch links. ' +
-                                                                           'Defaults to delay of all links if unset.')
-@click.option('--fpga-loss', type=click.IntRange(0, 100), help='% chance of packet loss for FPGA switch links.' +
-                                                               'Defaults to 2 * loss of all links if unset.')
+@click.option('--fpga-bandwidth', type=click.IntRange(min=0),
+              help='Max bandwidth of FPGA switches in Mbps. Defaults to bandwidth of all links if '
+                   'unset.')
+@click.option('--fpga-delay', type=str, callback=validate_fpga_delay,
+              help='Delay of FPGA switches. Defaults to 2 * delay of all links if unset.')
+@click.option('--fpga-loss', type=click.IntRange(0, 100),
+              help='Percentage chance of packet loss for FPGA switches. Defaults to 2 * loss of '
+                   'all links if unset.')
 @click.option('-p', '--ping-all', is_flag=True, help='Run a ping test between all hosts.')
 @click.option('-i', '--iperf', is_flag=True, help='Test bandwidth between first and last host.')
 @click.option('-c', '--cloud-fpga', type=bool, default=True, show_default=True,
               help='Test performance between leaf and root or leaf and FPGA switch')
-@click.option('--dump-node-connections', is_flag=True, help='Dump all node connections.')
+@click.option('--dump-node-connections', is_flag=True,
+              help='Dump all node connections before running tests.')
 @click.option('--poisson', is_flag=True, help="Use a poisson distribution for link delay.")
 @click.option('--log', default='info', show_default=True,
-              type=click.Choice(['debug', 'info', 'output', 'warning', 'error', 'critical']), help='Set the log level.')
+              type=click.Choice(['debug', 'info', 'output', 'warning', 'error', 'critical']),
+              help='Set the log level.')
 def main(spread,
          depth,
          bandwidth,
