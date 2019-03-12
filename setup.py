@@ -25,7 +25,7 @@ class PreInstallCommand(install):
 
 setup(
     name='fpga_switch_model',
-    version='0.1',
+    version='1.0',
     packages=find_packages(),
     py_modules=['fpga_switch_model'],
     install_requires=[
