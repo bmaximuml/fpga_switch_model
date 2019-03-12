@@ -1,6 +1,6 @@
 import logging
 import re
-import numpy as np
+from numpy import random
 
 from mininet.clean import Cleanup
 from mininet.net import Mininet
@@ -99,7 +99,7 @@ def get_poisson_delay(delay):
     """Returns a Poisson distributed delay of the given delay."""
     valid_time = re.compile('^([-+]?[0-9]*\.?[0-9]+)([PTGMkmunpf]?s)$')
     match = valid_time.match(delay)
-    poisson = np.random.poisson(float(match.group(1)))
+    poisson = random.poisson(float(match.group(1)))
     return "{}{}".format(poisson, match.group(2))
 
 
