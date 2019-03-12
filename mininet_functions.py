@@ -1,4 +1,6 @@
 import logging
+import re
+import numpy as np
 
 from mininet.clean import Cleanup
 from mininet.net import Mininet
@@ -91,6 +93,21 @@ class TreeTopoGeneric(Topo):
                         logger.debug("Adding standard link from switch[{}][{}] to "
                                      "switch[{}][{}]".format(i, j, i + 1, (spread * j) + k))
                         self.addLink(switch, switches[i + 1][(spread * j) + k], **link_opts)
+
+
+def get_poisson_delay(delay):
+    """Returns a Poisson distributed delay of the given delay."""
+    valid_time = re.compile('^([-+]?[0-9]*\.?[0-9]+)([PTGMkmunpf]?s)$')
+    match = valid_time.match(delay)
+    poisson = np.random.poisson(float(match.group(1)))
+    return "{}{}".format(poisson, match.group(2))
+
+
+def halve_delay(delay):
+    valid_time = re.compile('^([-+]?[0-9]*\.?[0-9]+)([PTGMkmunpf]?s)$')
+    match = valid_time.match(delay)
+    half = float(match.group(1)) / 2
+    return "{}{}".format(half, match.group(2))
 
 
 def setup_mininet(log, spread, depth, bandwidth, delay, loss, fpga, fpga_bandwidth, fpga_delay,

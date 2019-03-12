@@ -14,7 +14,6 @@ import logging
 import logging.config
 import os
 import re
-import numpy as np
 
 import click
 
@@ -25,21 +24,6 @@ except ImportError:
     os.symlink("mn/mininet", "mininet")
     from mininet_functions import setup_mininet
 from mininet.util import dumpNodeConnections
-
-
-def get_poisson_delay(delay):
-    """Returns a Poisson distributed delay of the given delay."""
-    valid_time = re.compile('^([-+]?[0-9]*\.?[0-9]+)([PTGMkmunpf]?s)$')
-    match = valid_time.match(delay)
-    poisson = np.random.poisson(float(match.group(1)))
-    return "{}{}".format(poisson, match.group(2))
-
-
-def halve_delay(delay):
-    valid_time = re.compile('^([-+]?[0-9]*\.?[0-9]+)([PTGMkmunpf]?s)$')
-    match = valid_time.match(delay)
-    half = float(match.group(1)) / 2
-    return "{}{}".format(half, match.group(2))
 
 
 def setup_logging(
