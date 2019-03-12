@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 """
 Simple example of setting network and CPU parameters
 
