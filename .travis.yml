@@ -1,0 +1,11 @@
+language: python
+python:
+- "2.7"
+dist: xenial
+install:
+- sudo pip install .
+script:
+- sudo python fpga_switch_model.py
+sudo: required
+git:
+    submodules: true
