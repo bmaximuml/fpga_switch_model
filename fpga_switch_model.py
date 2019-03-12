@@ -83,7 +83,6 @@ def validate_fpga_delay(ctx, param, value):
               help='Test performance between leaf and root or leaf and FPGA switch')
 @click.option('--dump-node-connections', is_flag=True, help='Dump all node connections.')
 @click.option('--poisson', is_flag=True, help="Use a poisson distribution for link delay.")
-@click.option('-q', '--quick', is_flag=True, help='For testing purposes.')
 @click.option('--log', default='info', show_default=True,
               type=click.Choice(['debug', 'info', 'output', 'warning', 'error', 'critical']), help='Set the log level.')
 def main(spread,
@@ -99,19 +98,9 @@ def main(spread,
          iperf,
          dump_node_connections,
          poisson,
-         quick,
          log,
          cloud_fpga
          ):
-    if quick:
-        spread = 3
-        depth = 3
-        bandwidth = 500
-        delay = '0ms'
-        loss = 0
-        ping_all = True
-        iperf = True
-        log = 'info'
 
     net = setup_mininet(log, spread, depth, bandwidth, delay, loss, fpga, fpga_bandwidth,
                         fpga_delay, fpga_loss, poisson)
