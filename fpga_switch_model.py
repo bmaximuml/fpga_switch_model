@@ -14,15 +14,12 @@ import logging
 import logging.config
 import os
 import re
+import subprocess
 
 import click
 
 from performance_tests import test_cloud_fpga
-try:
-    from mininet_functions import setup_mininet
-except ImportError:
-    os.symlink("mn/mininet", "mininet")
-    from mininet_functions import setup_mininet
+from mininet_functions import setup_mininet
 from mininet.util import dumpNodeConnections
 
 

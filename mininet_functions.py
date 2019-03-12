@@ -1,6 +1,8 @@
 import logging
+import os
 import re
 from numpy import random
+
 
 from mininet.clean import Cleanup
 from mininet.net import Mininet
