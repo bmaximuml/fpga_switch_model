@@ -8,6 +8,16 @@ packets from needing to be sent all the way into datacenters.
 
 This application can be used to model the performance of networks containing these switches.
 
+## Installation
+
+The application is currently only supported on Ubuntu 16.04 LTS, since this is the only version of Ubuntu which a stable release of mininet is supported on. Once mininet 2.2.3 is release, Ubuntu 18.04 LTS will also be supported.
+
+To install the application you will first need to install git (to clone the repository) and python (to run the application).
+1. `sudo apt install git python-pip` Install git and python
+2. `git clone --recursive https://github.com/benjilev08/fpga_switch_model` Clone the repository
+3. `cd fpga_switch_model` Enter the clone directory
+4. `sudo -H pip install .` Install the application and its dependencies. This must be run as root in order to correctly install mininet.
+5. Run the application as shown below
 
 ## Usage 
 Requires root.
