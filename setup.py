@@ -2,7 +2,7 @@ import os
 import subprocess
 
 
-from setuptools import setup
+from setuptools import setup, find_packages
 from setuptools.command.install import install
 
 
@@ -26,6 +26,7 @@ class PreInstallCommand(install):
 setup(
     name='fpga_switch_model',
     version='0.1',
+    packages=find_packages(),
     py_modules=['fpga_switch_model'],
     install_requires=[
         'Click',
@@ -36,5 +37,13 @@ setup(
         [console_scripts]
         fpga_switch_model=fpga_switch_model:cli
     ''',
+
+    # metadata to display on PyPI
+    author="Benji Levine",
+    author_email="b.levine@warwick.ac.uk",
+    description="This is a Python application for modelling networking topologies containing " + \
+                "some FPGA-based switches which will perform compute.",
+    keywords="fpga switch",
+    url="https://github.com/benjilev08/fpga_switch_model",
     cmdclass={'install': PreInstallCommand},
 )
