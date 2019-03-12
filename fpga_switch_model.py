@@ -89,22 +89,8 @@ def validate_fpga_delay(ctx, param, value):
 @click.option('--log', default='info', show_default=True,
               type=click.Choice(['debug', 'info', 'output', 'warning', 'error', 'critical']),
               help='Set the log level.')
-def main(spread,
-         depth,
-         bandwidth,
-         delay,
-         loss,
-         fpga,
-         fpga_bandwidth,
-         fpga_delay,
-         fpga_loss,
-         ping_all,
-         iperf,
-         dump_node_connections,
-         poisson,
-         log,
-         cloud_fpga
-         ):
+def main(spread, depth, bandwidth, delay, loss, fpga, fpga_bandwidth, fpga_delay, fpga_loss,
+         ping_all, iperf, dump_node_connections, poisson, log, cloud_fpga):
 
     net = setup_mininet(log, spread, depth, bandwidth, delay, loss, fpga, fpga_bandwidth,
                         fpga_delay, fpga_loss, poisson)
