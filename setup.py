@@ -6,6 +6,7 @@ setup(
     py_modules=['fpga_switch_model'],
     install_requires=[
         'Click',
+        'logging'
     ],
     entry_points='''
         [console_scripts]
