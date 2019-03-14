@@ -66,9 +66,8 @@ def validate_fpga_delay(ctx, param, value):
               help='Percentage chance of packet loss for all links.')
 @click.option('-f', '--fpga', type=click.IntRange(min=0),
               help='Level of the tree which should be modelled as FPGA switches (root is 0).')
-@click.option('--fpga-bandwidth', type=click.IntRange(min=0),
-              help='Max bandwidth of FPGA switches in Mbps. Defaults to bandwidth of all links if '
-                   'unset.')
+@click.option('--fpga-bandwidth', type=click.IntRange(min=0), default=504,
+              help='Max bandwidth of FPGA switches in Mbps.')
 @click.option('--fpga-delay', type=str, callback=validate_fpga_delay,
               help='Delay of FPGA switches. Defaults to 2 * delay of all links if unset.')
 @click.option('--fpga-loss', type=click.IntRange(0, 100),

@@ -34,7 +34,7 @@ Options:
 | -e | --delay | '1ms' | Delay of all links. |
 | -l | --loss | 0 | Percentage chance of packet loss for all links. |
 | -f | --fpga | | Level of the tree which should be modelled as FPGA switches (root is 0). |
-| | --fpga-bandwidth | <--bandwidth value> | Max bandwidth of FPGA switches in Mbps. Defaults to bandwidth of all links if unset. |
+| | --fpga-bandwidth | 504 | Max bandwidth of FPGA switches in Mbps. Defaults to max bandwidth of PCIe. |
 | | --fpga-delay | <--delay value * 2> | Delay of FPGA switches. Defaults to 2 * delay of all links if unset.|
 | | --fpga-loss | <--loss value * 2> | Percentage chance of packet loss for FPGA switches. Defaults to 2 * loss of all links if unset.|
 | -p | --ping-all | | Run a ping test between all hosts. |
