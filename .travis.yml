@@ -1,11 +1,44 @@
 language: python
-python:
-- "2.7"
-dist: xenial
-install:
-- sudo pip install .
-script:
-- sudo python fpga_switch_model.py
 sudo: required
+
+matrix:
+  include:
+    - dist: xenial
+      python: 2.7
+      env: dist="16.04 LTS xenial"
+    - dist: xenial
+      python: 3.6
+      env: dist="16.04 LTS xenial"
+    - dist: trusty
+      python: 2.7
+      env: dist="14.04 LTS trusty"
+    - dist: trusty
+      python: 3.6
+      env: dist="14.04 LTS trusty"
+
 git:
     submodules: true
+
+before_install:
+- sudo apt-get update -qq
+- sudo apt-get install -qq vlan
+- PYTHON=`which python` mininet/util/install.sh -n
+
+install:
+- sudo pip install .
+
+script:
+- alias sudo="sudo env PATH=$PATH"
+- export PYTHON=`which python`
+- cd mininet
+- echo 'px import sys; print(sys.version_info)' | sudo $PYTHON bin/mn -v output
+- sudo $PYTHON bin/mn --test pingall
+- sudo $PYTHON mininet/test/runner.py -v -quick
+- sudo $PYTHON examples/test/runner.py -v -quick
+- cd ..
+- sudo python fpga_switch_model.py
+
+notifications:
+  email:
+    on_success: never
+
