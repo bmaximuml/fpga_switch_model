@@ -1,6 +1,8 @@
 # FPGA Switch Model
 
-This is a Python application for modelling networking topologies containing some FPGA-based switches which will perform 
+[![Build Status](https://travis-ci.com/benjilev08/fpga_switch_model.svg?branch=master)](https://travis-ci.com/benjilev08/fpga_switch_model)
+
+This is a Python application for modelling networking topologies containing some FPGA-based switches which will perform
 compute.
 
 These switches will not be able to perform as fast as the cloud servers they are stepping in for, however they prevent
@@ -19,16 +21,16 @@ To install the application you will first need to install git (to clone the repo
 4. `sudo -H pip install .` Install the application and its dependencies. This must be run as root in order to correctly install mininet.
 5. Run the application as shown below
 
-## Usage 
+## Usage
 Requires root.
 
 `fpga_switch_model.py [OPTIONS]`
 
 Options:
 
-| Short Tag | Long Tag | Default | Description | 
+| Short Tag | Long Tag | Default | Description |
 |---|---|---|---
-| -s | --spread | 2 | Number of children each node will have. | 
+| -s | --spread | 2 | Number of children each node will have. |
 | -d | --depth | 4 | Number of levels in the tree. |
 | -b | --bandwidth | 10 | Max bandwidth of all links in Mbps. |
 | -e | --delay | '1ms' | Delay of all links. |
