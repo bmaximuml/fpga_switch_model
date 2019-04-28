@@ -25,7 +25,8 @@ before_install:
 - PYTHON=`which python` mininet/util/install.sh -n
 
 install:
-- sudo -H pip install . click
+- sudo -H pip install .
+- pip install click
 
 script:
 - sudo python fpga_switch_model.py
