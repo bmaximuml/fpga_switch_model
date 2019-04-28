@@ -15,7 +15,7 @@ def runTests(test_dir, verbose):
     testSuite = TestLoader().discover(test_dir)
     verbosity = 2 if verbose else 1
     # run tests
-    TextTestRunner(verbosity=verbosity).run(testSuite)
+    return TextTestRunner(verbosity=verbosity).run(testSuite)
 
 if __name__ == '__main__':
     # get the directory containing tests
