@@ -15,8 +15,8 @@ from mininet.topo import Topo
 class TreeTopoGeneric(Topo):
     """"Generic Tree topology."""
 
-    def __init__(self, spread, depth, bandwidth, delay, loss, fpga, fpga_bandwidth, fpga_delay,
-                 fpga_loss, poisson):
+    def __init__(self, spread, depth, bandwidth, delay, loss, fpga, fpga_bandwidth=None, fpga_delay=None,
+                 fpga_loss=None, poisson=None):
         """"Create tree topology according to given parameters."""
         logger = logging.getLogger(__name__)
 
