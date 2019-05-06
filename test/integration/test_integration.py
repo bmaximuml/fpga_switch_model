@@ -2,6 +2,7 @@
 
 import unittest
 from mininet_functions import TreeTopoGeneric
+from performance_tests import test_cloud_fpga
 
 from mininet.clean import Cleanup
 from mininet.net import Mininet
@@ -75,7 +76,8 @@ class TestTreeTopoGenericHalveDelay(unittest.TestCase):
             finally:
                 Cleanup.cleanup()
 
-class TestTreeTopoGenericHalveDelay(unittest.TestCase):
+
+class TestTreeTopoGenericHalveDelayPoisson(unittest.TestCase):
     """Test the TreeTopoGeneric class with the get_poisson_delay and halve_delay functions"""
     def test_simple(self):
         topo_0 = TreeTopoGeneric(spread=2, depth=7, bandwidth=10, delay='7ms', loss=0, fpga=4,
@@ -116,6 +118,59 @@ class TestTreeTopoGenericHalveDelay(unittest.TestCase):
             finally:
                 Cleanup.cleanup()
 
+
+class TestTestCloudFpgaTestCloud(unittest.TestCase):
+    """Test the test_cloud_fpga with the halve_delay function and the TreeTopoGeneric class"""
+    def test_simple(self):
+        topo_0 = TreeTopoGeneric(spread=3, depth=4, bandwidth=10, delay='1ms', loss=0, fpga=2)
+        topo_1 = TreeTopoGeneric(spread=2, depth=7, bandwidth=10, delay='1ms', loss=1, fpga=3)
+        topo_2 = TreeTopoGeneric(spread=2, depth=6, bandwidth=1, delay='1ms', loss=0, fpga=5)
+        topo_3 = TreeTopoGeneric(spread=5, depth=3, bandwidth=10, delay='10ms', loss=1, fpga=2)
+        topo_4 = TreeTopoGeneric(spread=3, depth=5, bandwidth=10, delay='1ms', loss=0, fpga=3)
+
+        topologies = [topo_0, topo_1, topo_2, topo_3, topo_4]
+
+        for i, topo in enumerate(topologies):
+            Cleanup.cleanup()
+            net = Mininet(topo=topo, host=CPULimitedHost, link=TCLink, autoStaticArp=True)
+            net.start()
+            try:
+                test_cloud_fpga(net, None if i == 0 else i)
+                self.assertEqual(True, True)
+            except Exception as ex:
+                self.assertEqual(True, False, 'test_cloud_fpga rose an Exception of type {}.'.format(type(ex).__name__))
+            finally:
+                Cleanup.cleanup()
+
+
+class TestTestCloudFpgaHalveDelayPoisson(unittest.TestCase):
+    """Test the test_cloud_fpga function with the halve_delay and the get_poisson_delay functions
+    and the TreeTopoGeneric class"""
+    def test_simple(self):
+        topo_0 = TreeTopoGeneric(spread=3, depth=4, bandwidth=10, delay='1ms', loss=0, fpga=2
+                                 , poisson=True)
+        topo_1 = TreeTopoGeneric(spread=2, depth=7, bandwidth=10, delay='1ms', loss=1, fpga=3
+                                 , poisson=True)
+        topo_2 = TreeTopoGeneric(spread=2, depth=6, bandwidth=1, delay='1ms', loss=0, fpga=5
+                                 , poisson=True)
+        topo_3 = TreeTopoGeneric(spread=5, depth=3, bandwidth=10, delay='10ms', loss=1, fpga=2
+                                 , poisson=True)
+        topo_4 = TreeTopoGeneric(spread=3, depth=5, bandwidth=10, delay='1ms', loss=0, fpga=3
+                                 , poisson=True)
+
+        topologies = [topo_0, topo_1, topo_2, topo_3, topo_4]
+
+        for i, topo in enumerate(topologies):
+            Cleanup.cleanup()
+            net = Mininet(topo=topo, host=CPULimitedHost, link=TCLink, autoStaticArp=True)
+            net.start()
+            try:
+                test_cloud_fpga(net, None if i == 0 else i)
+                self.assertEqual(True, True)
+            except Exception as ex:
+                self.assertEqual(True, False, 'test_cloud_fpga rose an Exception of type {}.'.format(type(ex).__name__))
+            finally:
+                Cleanup.cleanup()
 
 if __name__ == '__main__':
     unittest.main()
