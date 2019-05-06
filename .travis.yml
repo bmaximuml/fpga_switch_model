@@ -30,7 +30,7 @@ install:
 
 script:
 - sudo python fpga_switch_model.py
-- pwd; python -m unittest discover -p 'test*.py'
+- python -m unittest discover -p 'test*.py' -v
 
 notifications:
   email:
