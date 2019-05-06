@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import sys
 from unittest import TextTestRunner, TestLoader
 import click
 
@@ -16,8 +17,8 @@ def run_tests(test_dir, verbose):
     # run tests
     result = TextTestRunner(verbosity=verbosity).run(test_suite)
     if result.wasSuccessful():
-        return 0
-    return 1
+        sys.exit(0)
+    sys.exit(1)
 
 
 if __name__ == '__main__':
