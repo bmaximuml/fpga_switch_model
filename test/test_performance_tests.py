@@ -6,10 +6,7 @@ from performance_tests import test_cloud_fpga
 from mininet.clean import Cleanup
 from mininet.net import Mininet
 from mininet.link import TCLink
-from mininet.log import setLogLevel
 from mininet.node import CPULimitedHost
-from mininet.topo import Topo
-from mininet.topolib import TreeTopo
 
 class TestTestCloudFpga(unittest.TestCase):
     """Test the test_cloud_fpga function"""
