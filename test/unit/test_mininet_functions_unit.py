@@ -45,10 +45,6 @@ class TestTreeTopoGeneric(unittest.TestCase):
         topo_5 = TreeTopoGeneric(spread=3, depth=5, bandwidth=10, delay='4ms', loss=2, fpga=None)
         topo_6 = TreeTopoGeneric(spread=1, depth=4, bandwidth=10, delay='1ms', loss=50, fpga=None)
         topo_7 = TreeTopoGeneric(spread=2, depth=7, bandwidth=10, delay='1ms', loss=0, fpga=None)
-        topo_8 = TreeTopoGeneric(spread=4, depth=6, bandwidth=10, delay='1ms', loss=0, fpga=1)
-        topo_9 = TreeTopoGeneric(spread=3, depth=4, bandwidth=10, delay='1ms', loss=0, fpga=2)
-        topo_10 = TreeTopoGeneric(spread=5, depth=2, bandwidth=10, delay='1ms', loss=0, fpga=3)
-        topo_11 = TreeTopoGeneric(spread=2, depth=7, bandwidth=10, delay='1ms', loss=0, fpga=4)
 
         topologies = [topo_0, topo_1, topo_2, topo_3, topo_4, topo_5, topo_6, topo_7, topo_8, topo_9, topo_10, topo_11]
 
