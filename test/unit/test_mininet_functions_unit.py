@@ -46,7 +46,7 @@ class TestTreeTopoGeneric(unittest.TestCase):
         topo_6 = TreeTopoGeneric(spread=1, depth=4, bandwidth=10, delay='1ms', loss=50, fpga=None)
         topo_7 = TreeTopoGeneric(spread=2, depth=7, bandwidth=10, delay='1ms', loss=0, fpga=None)
 
-        topologies = [topo_0, topo_1, topo_2, topo_3, topo_4, topo_5, topo_6, topo_7, topo_8, topo_9, topo_10, topo_11]
+        topologies = [topo_0, topo_1, topo_2, topo_3, topo_4, topo_5, topo_6, topo_7]
 
         for topo in topologies:
             try:
